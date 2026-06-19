@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finance Tracker — Settings</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-100 min-h-screen">
+
+  <!-- ─── NAVBAR ─────────────────────────────────────── -->
+  <nav class="bg-white dark:bg-gray-900 shadow px-6 py-4 flex items-center justify-between">
+    <h1 class="text-xl font-bold text-indigo-600">💰 FinanceTracker</h1>
+    <div class="flex gap-6 text-sm font-medium">
+      <a href="index.html"        class="hover:text-indigo-500">Dashboard</a>
+      <a href="transactions.html" class="hover:text-indigo-500">Transactions</a>
+      <a href="budget.html"       class="hover:text-indigo-500">Budget</a>
+      <a href="reports.html"      class="hover:text-indigo-500">Reports</a>
+      <a href="settings.html"     class="text-indigo-600 border-b-2 border-indigo-600 pb-1">Settings</a>
+    </div>
+  </nav>
+
+  <main class="max-w-2xl mx-auto px-6 py-8 space-y-6">
+
+    <h2 class="text-2xl font-bold">Settings</h2>
+
+    <!-- ─── PROFILE ──────────────────────────────────── -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+      <h3 class="font-semibold mb-4">Profile</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm font-medium block mb-1">Your Name</label>
+          <input id="s-name" type="text" placeholder="e.g. Nithin"
+                 class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"/>
+        </div>
+        <div>
+          <label class="text-sm font-medium block mb-1">Currency Symbol</label>
+          <input id="s-currency" type="text" maxlength="3" placeholder="₹"
+                 class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"/>
+        </div>
+      </div>
+      <button onclick="saveProfile()"
+              class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2 rounded-xl transition">
+        Save Profile
+      </button>
+      <p id="profile-saved" class="text-green-500 text-xs mt-2 hidden">✅ Profile saved!</p>
+    </div>
+
+    <!-- ─── THEME ─────────────────────────────────────── -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+      <h3 class="font-semibold mb-4">Appearance</h3>
+      <div class="flex items-center gap-4">
+        <span class="text-sm">Light</span>
+        <button id="theme-toggle" onclick="toggleTheme()"
+                class="relative w-12 h-6 rounded-full bg-gray-300 dark:bg-indigo-600 transition-colors duration-300 focus:outline-none">
+          <span id="theme-dot"
+                class="absolute top-1 left-1 dark:left-7 w-4 h-4 rounded-full bg-white transition-all duration-300 shadow"></span>
+        </button>
+        <span class="text-sm">Dark</span>
+      </div>
+      <p class="text-xs text-gray-400 mt-2">Toggle switches between light and dark mode</p>
+    </div>
+
+    <!-- ─── CATEGORIES ────────────────────────────────── -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+      <h3 class="font-semibold mb-4">Manage Categories</h3>
+
+      <div class="flex gap-2 mb-4">
+        <input id="new-cat" type="text" placeholder="Add new category..."
+               class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"/>
+        <button onclick="addCategory()"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
+          Add
+        </button>
+      </div>
+
+      <div id="cat-list" class="flex flex-wrap gap-2">
+        <!-- JS renders category chips -->
+      </div>
+    </div>
+
+    <!-- ─── DATA MANAGEMENT ───────────────────────────── -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+      <h3 class="font-semibold mb-4">Data Management</h3>
+      <div class="flex flex-col sm:flex-row gap-3">
+
+        <button onclick="exportData()"
+                class="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-5 py-2 rounded-xl transition">
+          ⬇ Export JSON
+        </button>
+
+        <button onclick="clearAllData()"
+                class="bg-red-100 hover:bg-red-200 text-red-600 dark:bg-red-900 dark:text-red-300 text-sm font-semibold px-5 py-2 rounded-xl transition">
+          🗑 Clear All Data
+        </button>
+
+      </div>
+      <p class="text-xs text-gray-400 mt-3">Export saves all your transactions and settings as a JSON file. Clear data is irreversible.</p>
+    </div>
+
+  </main>
+
+  <!-- ─── SCRIPTS ───────────────────────────────────────── -->
+  <script src="utils.js"></script>
+  <script>
+    applyTheme();
+
+    // Load current settings into form
+    function loadSettings() {
+      const s = getSettings();
+      document.getElementById('s-name').value     = s.name;
+      document.getElementById('s-currency').value = s.currency;
+      renderCategories();
+    }
+
+    // Save profile
+    function saveProfile() {
+      const s       = getSettings();
+      s.name        = document.getElementById('s-name').value.trim() || 'User';
+      s.currency    = document.getElementById('s-currency').value.trim() || '₹';
+      saveSettings(s);
+      const saved   = document.getElementById('profile-saved');
+      saved.classList.remove('hidden');
+      setTimeout(() => saved.classList.add('hidden'), 2000);
+    }
+
+    // Theme toggle
+    function toggleTheme() {
+      const s = getSettings();
+      s.theme = s.theme === 'light' ? 'dark' : 'light';
+      saveSettings(s);
+      applyTheme();
+    }
+
+    // Render category chips
+    function renderCategories() {
+      const { categories } = getSettings();
+      const el = document.getElementById('cat-list');
+      el.innerHTML = categories.map(c => `
+        <span class="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 text-sm px-3 py-1 rounded-full">
+          ${c}
+          <button onclick="removeCategory('${c}')"
+                  class="text-gray-400 hover:text-red-500 ml-1 leading-none">&times;</button>
+        </span>
+      `).join('');
+    }
+
+    // Add new category
+    function addCategory() {
+      const input = document.getElementById('new-cat');
+      const val   = input.value.trim();
+      if (!val) return;
+      const s = getSettings();
+      if (!s.categories.includes(val)) {
+        s.categories.push(val);
+        saveSettings(s);
+        renderCategories();
+      }
+      input.value = '';
+    }
+
+    // Remove category
+    function removeCategory(cat) {
+      const s = getSettings();
+      s.categories = s.categories.filter(c => c !== cat);
+      saveSettings(s);
+      renderCategories();
+    }
+
+    // Export all data
+    function exportData() {
+      const data = {
+        transactions: getTransactions(),
+        budgets:      getBudgets(),
+        settings:     getSettings(),
+        exportedAt:   new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a    = document.createElement('a');
+      a.href     = URL.createObjectURL(blob);
+      a.download = 'finance-tracker-export.json';
+      a.click();
+    }
+
+    // Clear all data
+    function clearAllData() {
+      if (confirm('⚠ This will delete ALL transactions, budgets, and settings. Are you sure?')) {
+        localStorage.removeItem('ft_transactions');
+        localStorage.removeItem('ft_budgets');
+        localStorage.removeItem('ft_settings');
+        alert('All data cleared.');
+        loadSettings();
+      }
+    }
+
+    loadSettings();
+  </script>
+
+</body>
+</html>
