@@ -1,214 +1,31 @@
 <!DOCTYPE html>
-<html lang="en" class="">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Finance Tracker — Transactions</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { darkMode: 'class' }
-  </script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-100 min-h-screen">
+<body class="bg-gray-100 min-h-screen">
 
-  <!-- ─── NAVBAR ─────────────────────────────────────── -->
-  <nav class="bg-white dark:bg-gray-900 shadow px-6 py-4 flex items-center justify-between">
-    <h1 class="text-xl font-bold text-indigo-600">💰 FinanceTracker</h1>
-    <div class="flex gap-6 text-sm font-medium">
-      <a href="index.html"        class="hover:text-indigo-500">Dashboard</a>
-      <a href="transactions.html" class="text-indigo-600 border-b-2 border-indigo-600 pb-1">Transactions</a>
-      <a href="budget.html"       class="hover:text-indigo-500">Budget</a>
-      <a href="reports.html"      class="hover:text-indigo-500">Reports</a>
-      <a href="settings.html"     class="hover:text-indigo-500">Settings</a>
-    </div>
+  <!-- NAVBAR -->
+  <nav class="bg-white shadow px-6 py-4 flex gap-6">
+    <a href="index.html">Dashboard</a>
+    <a href="transactions.html">Transactions</a>
+    <!-- ... -->
   </nav>
 
+  <!-- MAIN -->
   <main class="max-w-4xl mx-auto px-6 py-8">
 
-    <h2 class="text-2xl font-bold mb-6">Transactions</h2>
+    <!-- TODO: Add transactions Form -->
 
-    <!-- ─── ADD TRANSACTION FORM ──────────────────────── -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 mb-8">
-      <h3 class="text-lg font-semibold mb-4">Add New Transaction</h3>
-
-      <!-- Toast notification -->
-      <div id="toast"
-           class="hidden mb-4 text-sm px-4 py-2 rounded-lg bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
-        ✅ Transaction added!
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-        <!-- Type -->
-        <div>
-          <label class="text-sm font-medium block mb-1">Type</label>
-          <select id="type"
-                  class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-          </select>
-        </div>
-
-        <!-- Category -->
-        <div>
-          <label class="text-sm font-medium block mb-1">Category</label>
-          <select id="category"
-                  class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-            <!-- Populated by JS from settings categories -->
-          </select>
-        </div>
-
-        <!-- Amount -->
-        <div>
-          <label class="text-sm font-medium block mb-1">Amount (₹)</label>
-          <input id="amount" type="number" min="1" placeholder="e.g. 500"
-                 class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"/>
-        </div>
-
-        <!-- Date -->
-        <div>
-          <label class="text-sm font-medium block mb-1">Date</label>
-          <input id="date" type="date"
-                 class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"/>
-        </div>
-
-        <!-- Note (full width) -->
-        <div class="sm:col-span-2">
-          <label class="text-sm font-medium block mb-1">Note (optional)</label>
-          <input id="note" type="text" placeholder="e.g. Lunch at canteen"
-                 class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"/>
-        </div>
-
-      </div>
-
-      <!-- Error message -->
-      <p id="error-msg" class="text-red-500 text-xs mt-2 hidden">Please fill all required fields correctly.</p>
-
-      <!-- Submit -->
-      <button onclick="handleAdd()"
-              class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2 rounded-xl transition text-sm">
-        + Add Transaction
-      </button>
-    </div>
-
-    <!-- ─── FILTER & SEARCH ────────────────────────────── -->
-    <div class="flex flex-col sm:flex-row gap-3 mb-4">
-      <input id="search" type="text" placeholder="Search by note or category..."
-             oninput="renderList()"
-             class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"/>
-
-      <select id="filter-type" onchange="renderList()"
-              class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 focus:outline-none">
-        <option value="all">All Types</option>
-        <option value="income">Income</option>
-        <option value="expense">Expense</option>
-      </select>
-    </div>
-
-    <!-- ─── TRANSACTION LIST ───────────────────────────── -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-5">
-      <h3 class="text-lg font-semibold mb-4">All Transactions</h3>
-      <ul id="transaction-list" class="divide-y divide-gray-100 dark:divide-gray-700">
-        <!-- JS renders here -->
-      </ul>
-    </div>
+    <!-- TODO: transactions list -->
 
   </main>
 
-  <!-- ─── SCRIPTS ───────────────────────────────────────── -->
   <script src="utils.js"></script>
   <script>
-    applyTheme();
-
-    // Set today's date as default
-    document.getElementById('date').value = new Date().toISOString().split('T')[0];
-
-    // Populate categories from settings
-    const { categories } = getSettings();
-    const catSelect = document.getElementById('category');
-    categories.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c; opt.textContent = c;
-      catSelect.appendChild(opt);
-    });
-
-    // Add transaction handler
-    function handleAdd() {
-      const type     = document.getElementById('type').value;
-      const category = document.getElementById('category').value;
-      const amount   = parseFloat(document.getElementById('amount').value);
-      const date     = document.getElementById('date').value;
-      const note     = document.getElementById('note').value.trim();
-      const errEl    = document.getElementById('error-msg');
-
-      // Validation
-      if (!category || !amount || amount <= 0 || !date) {
-        errEl.classList.remove('hidden');
-        return;
-      }
-      errEl.classList.add('hidden');
-
-      // Save
-      addTransaction({ id: Date.now(), type, category, amount, date, note });
-
-      // Reset form
-      document.getElementById('amount').value = '';
-      document.getElementById('note').value   = '';
-
-      // Show toast
-      const toast = document.getElementById('toast');
-      toast.classList.remove('hidden');
-      setTimeout(() => toast.classList.add('hidden'), 2500);
-
-      renderList();
-    }
-
-    // Render filtered list
-    function renderList() {
-      const search     = document.getElementById('search').value.toLowerCase();
-      const filterType = document.getElementById('filter-type').value;
-      const listEl     = document.getElementById('transaction-list');
-
-      let txns = getTransactions().reverse();
-
-      if (filterType !== 'all') txns = txns.filter(t => t.type === filterType);
-      if (search) txns = txns.filter(t =>
-        t.category.toLowerCase().includes(search) ||
-        (t.note && t.note.toLowerCase().includes(search))
-      );
-
-      if (txns.length === 0) {
-        listEl.innerHTML = `<li class="text-gray-400 text-sm py-4 text-center">No transactions found.</li>`;
-        return;
-      }
-
-      listEl.innerHTML = txns.map(t => `
-        <li class="flex justify-between items-center py-3">
-          <div>
-            <p class="font-medium text-sm">${t.category}</p>
-            <p class="text-xs text-gray-400">${t.date}${t.note ? ' · ' + t.note : ''}</p>
-          </div>
-          <div class="flex items-center gap-4">
-            <span class="font-semibold text-sm ${t.type === 'income' ? 'text-green-500' : 'text-red-500'}">
-              ${t.type === 'income' ? '+' : '-'}${formatAmount(t.amount)}
-            </span>
-            <button onclick="handleDelete(${t.id})"
-                    class="text-xs text-gray-400 hover:text-red-500 transition">🗑</button>
-          </div>
-        </li>
-      `).join('');
-    }
-
-    // Delete handler
-    function handleDelete(id) {
-      if (confirm('Delete this transaction?')) {
-        deleteTransaction(id);
-        renderList();
-      }
-    }
-
-    // Initial render
-    renderList();
+    // TODO: write your logic here
   </script>
 
 </body>

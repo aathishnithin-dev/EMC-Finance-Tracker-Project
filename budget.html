@@ -1,171 +1,31 @@
 <!DOCTYPE html>
-<html lang="en" class="">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Finance Tracker — Budget</title>
+  <title>Finance Tracker — Transactions</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { darkMode: 'class' }
-  </script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-100 min-h-screen">
+<body class="bg-gray-100 min-h-screen">
 
-  <!-- ─── NAVBAR ─────────────────────────────────────── -->
-  <nav class="bg-white dark:bg-gray-900 shadow px-6 py-4 flex items-center justify-between">
-    <h1 class="text-xl font-bold text-indigo-600">💰 FinanceTracker</h1>
-    <div class="flex gap-6 text-sm font-medium">
-      <a href="index.html"        class="hover:text-indigo-500">Dashboard</a>
-      <a href="transactions.html" class="hover:text-indigo-500">Transactions</a>
-      <a href="budget.html"       class="text-indigo-600 border-b-2 border-indigo-600 pb-1">Budget</a>
-      <a href="reports.html"      class="hover:text-indigo-500">Reports</a>
-      <a href="settings.html"     class="hover:text-indigo-500">Settings</a>
-    </div>
+  <!-- NAVBAR -->
+  <nav class="bg-white shadow px-6 py-4 flex gap-6">
+    <a href="index.html">Dashboard</a>
+    <a href="transactions.html">Transactions</a>
+    <!-- ... -->
   </nav>
 
+  <!-- MAIN -->
   <main class="max-w-4xl mx-auto px-6 py-8">
 
-    <h2 class="text-2xl font-bold mb-6">Budget Planner</h2>
+    <!-- TODO: Add budget Form -->
 
-    <!-- ─── SET BUDGET FORM ───────────────────────────── -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 mb-8">
-      <h3 class="text-lg font-semibold mb-4">Set Category Budget</h3>
-
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-
-        <div>
-          <label class="text-sm font-medium block mb-1">Category</label>
-          <select id="budget-category"
-                  class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-          </select>
-        </div>
-
-        <div>
-          <label class="text-sm font-medium block mb-1">Limit Amount (₹)</label>
-          <input id="budget-amount" type="number" min="1" placeholder="e.g. 3000"
-                 class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"/>
-        </div>
-
-        <button onclick="handleSetBudget()"
-                class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2 rounded-xl transition text-sm h-fit">
-          Set Budget
-        </button>
-
-      </div>
-      <p id="budget-error" class="text-red-500 text-xs mt-2 hidden">Please select a category and enter a valid amount.</p>
-    </div>
-
-    <!-- ─── BUDGET PROGRESS CARDS ─────────────────────── -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
-      <h3 class="text-lg font-semibold mb-5">Budget vs Spending</h3>
-      <div id="budget-cards" class="space-y-5">
-        <!-- JS renders progress bars here -->
-        <p class="text-gray-400 text-sm">No budgets set yet. Add one above.</p>
-      </div>
-    </div>
+    <!-- TODO: budget list -->
 
   </main>
 
-  <!-- ─── SCRIPTS ───────────────────────────────────────── -->
   <script src="utils.js"></script>
   <script>
-    applyTheme();
-
-    // Populate category dropdown
-    const { categories } = getSettings();
-    const catSelect = document.getElementById('budget-category');
-    categories.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c; opt.textContent = c;
-      catSelect.appendChild(opt);
-    });
-
-    // Set budget handler
-    function handleSetBudget() {
-      const cat    = document.getElementById('budget-category').value;
-      const amount = parseFloat(document.getElementById('budget-amount').value);
-      const errEl  = document.getElementById('budget-error');
-
-      if (!cat || !amount || amount <= 0) {
-        errEl.classList.remove('hidden');
-        return;
-      }
-      errEl.classList.add('hidden');
-
-      const budgets = getBudgets();
-      budgets[cat]  = amount;
-      saveBudgets(budgets);
-
-      document.getElementById('budget-amount').value = '';
-      renderBudgets();
-    }
-
-    // Render budget progress bars
-    function renderBudgets() {
-      const budgets  = getBudgets();
-      const txns     = getTransactions();
-      const cardsEl  = document.getElementById('budget-cards');
-      const keys     = Object.keys(budgets);
-
-      if (keys.length === 0) {
-        cardsEl.innerHTML = `<p class="text-gray-400 text-sm">No budgets set yet. Add one above.</p>`;
-        return;
-      }
-
-      cardsEl.innerHTML = keys.map(cat => {
-        const limit   = budgets[cat];
-        const spent   = txns
-          .filter(t => t.type === 'expense' && t.category === cat)
-          .reduce((s, t) => s + t.amount, 0);
-        const pct     = Math.min((spent / limit) * 100, 100).toFixed(1);
-        const remain  = limit - spent;
-
-        // Color logic
-        let barColor  = 'bg-green-500';
-        let statusTxt = 'On track';
-        let statusClr = 'text-green-500';
-
-        if (pct >= 100) {
-          barColor  = 'bg-red-500';
-          statusTxt = '⚠ Budget exceeded!';
-          statusClr = 'text-red-500';
-        } else if (pct >= 75) {
-          barColor  = 'bg-yellow-400';
-          statusTxt = 'Nearing limit';
-          statusClr = 'text-yellow-500';
-        }
-
-        return `
-          <div>
-            <div class="flex justify-between items-center mb-1">
-              <span class="font-medium text-sm">${cat}</span>
-              <span class="text-xs ${statusClr} font-semibold">${statusTxt}</span>
-            </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-1">
-              <div class="${barColor} h-3 rounded-full transition-all" style="width:${pct}%"></div>
-            </div>
-            <div class="flex justify-between text-xs text-gray-500">
-              <span>Spent: ${formatAmount(spent)}</span>
-              <span>Limit: ${formatAmount(limit)}</span>
-              <span>Remaining: ${remain >= 0 ? formatAmount(remain) : '–' + formatAmount(Math.abs(remain))}</span>
-            </div>
-            <button onclick="deleteBudget('${cat}')"
-                    class="text-xs text-gray-400 hover:text-red-500 mt-1 transition">Remove budget</button>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // Delete budget entry
-    function deleteBudget(cat) {
-      const budgets = getBudgets();
-      delete budgets[cat];
-      saveBudgets(budgets);
-      renderBudgets();
-    }
-
-    // Initial render
-    renderBudgets();
+    // TODO: write your logic here
   </script>
 
 </body>
