@@ -1,32 +1,154 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8" />
-  <title>Finance Tracker — Transactions</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finance Tracker Settings</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
 
-  <!-- NAVBAR -->
-  <nav class="bg-white shadow px-6 py-4 flex gap-6">
-    <a href="index.html">Dashboard</a>
-    <a href="transactions.html">Transactions</a>
-    <!-- ... -->
+  <!-- ─── NAVBAR ─────────────────────────────────────── -->
+  <nav class="bg-white dark:bg-gray-900 shadow px-6 py-4 flex items-center justify-between">
+    <h1 class="text-xl font-bold text-indigo-600">💰 FinanceTracker</h1>
+    <div class="flex gap-6 text-sm font-medium">
+      <a href="index.html"        class="text-indigo-600 border-b-2 border-indigo-600 pb-1">Dashboard</a>
+      <a href="transactions.html" class="hover:text-indigo-500">Transactions</a>
+      <a href="budget.html"       class="hover:text-indigo-500">Budget</a>
+      <a href="reports.html"      class="hover:text-indigo-500">Reports</a>
+      <a href="settings.html"     class="hover:text-indigo-500">Settings</a>
+    </div>
   </nav>
 
-  <!-- MAIN -->
-  <main class="max-w-4xl mx-auto px-6 py-8">
+  <!-- ─── SETTINGS CONTENT ───────────────────────────── -->
+  <div class="max-w-lg mx-auto mt-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-6">
+    <h2 class="text-2xl font-bold text-center">⚙️ Settings</h2>
 
-    <!-- TODO: Add settings Form -->
+    <!-- User Name -->
+    <div>
+      <label class="block font-semibold mb-2">User Name</label>
+      <input id="username" type="text" placeholder="Enter your name"
+        class="w-full px-3 py-2 rounded border-none bg-gray-100 dark:bg-gray-700">
+    </div>
 
-    <!-- TODO: settings list -->
+    <!-- Currency -->
+    <div>
+      <label class="block font-semibold mb-2">Currency Symbol</label>
+      <input id="currency" type="text" value="₹"
+        class="w-full px-3 py-2 rounded border-none bg-gray-100 dark:bg-gray-700">
+    </div>
 
-  </main>
+    <!-- Theme Toggle -->
+    <div class="flex items-center justify-between">
+      <span class="font-semibold">Theme</span>
+      <button id="themetoggle" class="px-4 py-2 rounded bg-indigo-500 text-white dark:bg-yellow-400 dark:text-black border-none">Light/Dark</button>
+    </div>
 
-  <script src="utils.js"></script>
+    <!-- Manage Categories -->
+    <div>
+      <label class="block font-semibold mb-2">Manage Categories</label>
+      <div class="flex space-x-2 mb-2">
+        <input id="newCategory" type="text" placeholder="Add category"
+          class="flex-1 px-3 py-2 rounded border-none bg-gray-100 dark:bg-gray-700">
+        <button id="addCategory" class="px-4 py-2 bg-green-500 text-white rounded">Add</button>
+      </div>
+         <ul id="categoryList" class="space-y-2"></ul>
+    </div>
+
+    <!-- Export Data -->
+    <div>
+      <button id="exportData" class="w-full px-4 py-2 bg-blue-500 text-white rounded">
+        Export Data as JSON
+      </button>
+    </div>
+
+    <!-- Clear All Data -->
+    <div>
+      <button id="clearData" class="w-full px-4 py-2 bg-red-500 text-white rounded">
+        Clear All Data
+      </button>
+    </div>
+  </div>
+
   <script>
-    // TODO: write your logic here
-  </script>
+    const html = document.documentElement;
+    const themeBtn = document.getElementById("themetoggle");
 
+    // Load saved theme
+    if (localStorage.getItem("theme") === "light") {
+      html.classList.remove("dark");
+    }
+
+    themeBtn.addEventListener("click", () => {
+      html.classList.toggle("dark");
+      localStorage.setItem("theme", html.classList.contains("dark") ? "dark" : "light");
+    });
+
+    // Categories
+    const categoryList = document.getElementById("categoryList");
+    const addCategoryBtn = document.getElementById("addCategory");
+    const newCategoryInput = document.getElementById("newCategory");
+    let categories = JSON.parse(localStorage.getItem("categories")) || [];
+
+    function renderCategories() {
+      categoryList.innerHTML = "";
+      categories.forEach((cat, index) => {
+        const li = document.createElement("li");
+        li.className = "flex justify-between items-center bg-gray-200 dark:bg-gray-700 px-3 py-2 rounded";
+        li.innerHTML = `<span>${cat}</span>
+          <button class="text-red-500" onclick="deleteCategory(${index})">Delete</button>`;
+        categoryList.appendChild(li);
+      });
+    }
+
+    window.deleteCategory = function(index) {
+      categories.splice(index, 1);
+      localStorage.setItem("categories", JSON.stringify(categories));
+      renderCategories();
+    }
+
+    addCategoryBtn.addEventListener("click", () => {
+      const cat = newCategoryInput.value.trim();
+      if (cat) {
+        categories.push(cat);
+        localStorage.setItem("categories", JSON.stringify(categories));
+        newCategoryInput.value = "";
+        renderCategories();
+      }
+    });
+
+    renderCategories();
+
+    // Export Data
+    document.getElementById("exportData").addEventListener("click", () => {
+      const data = {
+        username: document.getElementById("username").value,
+        currency: document.getElementById("currency").value,
+        categories: categories
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "finance-tracker-data.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // Clear All Data
+    document.getElementById("clearData").addEventListener("click", () => {
+      if (confirm("Are you sure you want to clear all data?")) {
+        localStorage.clear();
+        categories = [];
+        renderCategories();
+        document.getElementById("username").value = "";
+        document.getElementById("currency").value = "₹";
+        alert("All data cleared!");
+      }
+    });
+  </script>
 </body>
 </html>
+
+
+
