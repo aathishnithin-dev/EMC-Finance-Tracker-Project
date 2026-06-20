@@ -6,30 +6,42 @@
   <title>Finance Tracker Settings</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex items-center justify-center p-6">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
 
-  <div class="w-full max-w-lg bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-6">
-    <h1 class="text-2xl font-bold text-center">⚙️ Settings</h1>
+  <!-- ─── NAVBAR ─────────────────────────────────────── -->
+  <nav class="bg-white dark:bg-gray-900 shadow px-6 py-4 flex items-center justify-between">
+    <h1 class="text-xl font-bold text-indigo-600">💰 FinanceTracker</h1>
+    <div class="flex gap-6 text-sm font-medium">
+      <a href="index.html"        class="text-indigo-600 border-b-2 border-indigo-600 pb-1">Dashboard</a>
+      <a href="transactions.html" class="hover:text-indigo-500">Transactions</a>
+      <a href="budget.html"       class="hover:text-indigo-500">Budget</a>
+      <a href="reports.html"      class="hover:text-indigo-500">Reports</a>
+      <a href="settings.html"     class="hover:text-indigo-500">Settings</a>
+    </div>
+  </nav>
 
-    <!-- User Name + Currency -->
+  <!-- ─── SETTINGS CONTENT ───────────────────────────── -->
+  <div class="max-w-lg mx-auto mt-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-6">
+    <h2 class="text-2xl font-bold text-center">⚙️ Settings</h2>
+
+    <!-- User Name -->
     <div>
       <label class="block font-semibold mb-2">User Name</label>
       <input id="username" type="text" placeholder="Enter your name"
-        class="w-full px-3 py-2 rounded border dark:border-gray-600 dark:bg-gray-700">
+        class="w-full px-3 py-2 rounded border-none bg-gray-100 dark:bg-gray-700">
     </div>
 
+    <!-- Currency -->
     <div>
       <label class="block font-semibold mb-2">Currency Symbol</label>
       <input id="currency" type="text" value="₹"
-        class="w-full px-3 py-2 rounded border dark:border-gray-600 dark:bg-gray-700">
+        class="w-full px-3 py-2 rounded border-none bg-gray-100 dark:bg-gray-700">
     </div>
 
     <!-- Theme Toggle -->
     <div class="flex items-center justify-between">
       <span class="font-semibold">Theme</span>
-      <button id="themeToggle" class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700">
-         Light/Dark
-      </button>
+      <button id="themetoggle" class="px-4 py-2 rounded bg-indigo-500 text-white dark:bg-yellow-400 dark:text-black border-none">Light/Dark</button>
     </div>
 
     <!-- Manage Categories -->
@@ -37,17 +49,10 @@
       <label class="block font-semibold mb-2">Manage Categories</label>
       <div class="flex space-x-2 mb-2">
         <input id="newCategory" type="text" placeholder="Add category"
-          class="flex-1 px-3 py-2 rounded border dark:border-gray-600 dark:bg-gray-700">
+          class="flex-1 px-3 py-2 rounded border-none bg-gray-100 dark:bg-gray-700">
         <button id="addCategory" class="px-4 py-2 bg-green-500 text-white rounded">Add</button>
       </div>
-      
-          <select id="category-type" class="block w-full bg-gray-700 text-gray-400 border border-none rounded-lg py-2 px-3">
-        <option value="">Select Category Type</option>
-        <option value="food">Food</option>
-        <option value="transportation">Transportation</option>
-        <option value="entertainment">Entertainment</option>
-    </select>
-
+         <ul id="categoryList" class="space-y-2"></ul>
     </div>
 
     <!-- Export Data -->
@@ -66,13 +71,15 @@
   </div>
 
   <script>
-    // Theme toggle
-    const themeToggle = document.getElementById("themeToggle");
     const html = document.documentElement;
+    const themeBtn = document.getElementById("themetoggle");
+
+    // Load saved theme
     if (localStorage.getItem("theme") === "light") {
       html.classList.remove("dark");
     }
-    themeToggle.addEventListener("click", () => {
+
+    themeBtn.addEventListener("click", () => {
       html.classList.toggle("dark");
       localStorage.setItem("theme", html.classList.contains("dark") ? "dark" : "light");
     });
@@ -81,7 +88,6 @@
     const categoryList = document.getElementById("categoryList");
     const addCategoryBtn = document.getElementById("addCategory");
     const newCategoryInput = document.getElementById("newCategory");
-
     let categories = JSON.parse(localStorage.getItem("categories")) || [];
 
     function renderCategories() {
@@ -95,7 +101,7 @@
       });
     }
 
-    function deleteCategory(index) {
+    window.deleteCategory = function(index) {
       categories.splice(index, 1);
       localStorage.setItem("categories", JSON.stringify(categories));
       renderCategories();
@@ -143,3 +149,6 @@
   </script>
 </body>
 </html>
+
+
+
