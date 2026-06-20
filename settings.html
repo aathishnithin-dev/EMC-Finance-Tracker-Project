@@ -1,32 +1,145 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8" />
-  <title>Finance Tracker — Transactions</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finance Tracker Settings</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex items-center justify-center p-6">
 
-  <!-- NAVBAR -->
-  <nav class="bg-white shadow px-6 py-4 flex gap-6">
-    <a href="index.html">Dashboard</a>
-    <a href="transactions.html">Transactions</a>
-    <!-- ... -->
-  </nav>
+  <div class="w-full max-w-lg bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-6">
+    <h1 class="text-2xl font-bold text-center">⚙️ Settings</h1>
 
-  <!-- MAIN -->
-  <main class="max-w-4xl mx-auto px-6 py-8">
+    <!-- User Name + Currency -->
+    <div>
+      <label class="block font-semibold mb-2">User Name</label>
+      <input id="username" type="text" placeholder="Enter your name"
+        class="w-full px-3 py-2 rounded border dark:border-gray-600 dark:bg-gray-700">
+    </div>
 
-    <!-- TODO: Add settings Form -->
+    <div>
+      <label class="block font-semibold mb-2">Currency Symbol</label>
+      <input id="currency" type="text" value="₹"
+        class="w-full px-3 py-2 rounded border dark:border-gray-600 dark:bg-gray-700">
+    </div>
 
-    <!-- TODO: settings list -->
+    <!-- Theme Toggle -->
+    <div class="flex items-center justify-between">
+      <span class="font-semibold">Theme</span>
+      <button id="themeToggle" class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700">
+         Light/Dark
+      </button>
+    </div>
 
-  </main>
+    <!-- Manage Categories -->
+    <div>
+      <label class="block font-semibold mb-2">Manage Categories</label>
+      <div class="flex space-x-2 mb-2">
+        <input id="newCategory" type="text" placeholder="Add category"
+          class="flex-1 px-3 py-2 rounded border dark:border-gray-600 dark:bg-gray-700">
+        <button id="addCategory" class="px-4 py-2 bg-green-500 text-white rounded">Add</button>
+      </div>
+      
+          <select id="category-type" class="block w-full bg-gray-700 text-gray-400 border border-none rounded-lg py-2 px-3">
+        <option value="">Select Category Type</option>
+        <option value="food">Food</option>
+        <option value="transportation">Transportation</option>
+        <option value="entertainment">Entertainment</option>
+    </select>
 
-  <script src="utils.js"></script>
+    </div>
+
+    <!-- Export Data -->
+    <div>
+      <button id="exportData" class="w-full px-4 py-2 bg-blue-500 text-white rounded">
+        Export Data as JSON
+      </button>
+    </div>
+
+    <!-- Clear All Data -->
+    <div>
+      <button id="clearData" class="w-full px-4 py-2 bg-red-500 text-white rounded">
+        Clear All Data
+      </button>
+    </div>
+  </div>
+
   <script>
-    // TODO: write your logic here
-  </script>
+    // Theme toggle
+    const themeToggle = document.getElementById("themeToggle");
+    const html = document.documentElement;
+    if (localStorage.getItem("theme") === "light") {
+      html.classList.remove("dark");
+    }
+    themeToggle.addEventListener("click", () => {
+      html.classList.toggle("dark");
+      localStorage.setItem("theme", html.classList.contains("dark") ? "dark" : "light");
+    });
 
+    // Categories
+    const categoryList = document.getElementById("categoryList");
+    const addCategoryBtn = document.getElementById("addCategory");
+    const newCategoryInput = document.getElementById("newCategory");
+
+    let categories = JSON.parse(localStorage.getItem("categories")) || [];
+
+    function renderCategories() {
+      categoryList.innerHTML = "";
+      categories.forEach((cat, index) => {
+        const li = document.createElement("li");
+        li.className = "flex justify-between items-center bg-gray-200 dark:bg-gray-700 px-3 py-2 rounded";
+        li.innerHTML = `<span>${cat}</span>
+          <button class="text-red-500" onclick="deleteCategory(${index})">Delete</button>`;
+        categoryList.appendChild(li);
+      });
+    }
+
+    function deleteCategory(index) {
+      categories.splice(index, 1);
+      localStorage.setItem("categories", JSON.stringify(categories));
+      renderCategories();
+    }
+
+    addCategoryBtn.addEventListener("click", () => {
+      const cat = newCategoryInput.value.trim();
+      if (cat) {
+        categories.push(cat);
+        localStorage.setItem("categories", JSON.stringify(categories));
+        newCategoryInput.value = "";
+        renderCategories();
+      }
+    });
+
+    renderCategories();
+
+    // Export Data
+    document.getElementById("exportData").addEventListener("click", () => {
+      const data = {
+        username: document.getElementById("username").value,
+        currency: document.getElementById("currency").value,
+        categories: categories
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "finance-tracker-data.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // Clear All Data
+    document.getElementById("clearData").addEventListener("click", () => {
+      if (confirm("Are you sure you want to clear all data?")) {
+        localStorage.clear();
+        categories = [];
+        renderCategories();
+        document.getElementById("username").value = "";
+        document.getElementById("currency").value = "₹";
+        alert("All data cleared!");
+      }
+    });
+  </script>
 </body>
 </html>
