@@ -294,6 +294,45 @@
         font-weight: 700;
       }
 
+      .range-select {
+        min-width: 148px;
+        height: 38px;
+        border: 0;
+        background: transparent;
+        color: #111b31;
+        font-size: 13px;
+        font-weight: 800;
+        outline: none;
+      }
+
+      .filter-stack {
+        display: grid;
+        justify-items: end;
+        gap: 8px;
+      }
+
+      .custom-range {
+        display: none;
+        grid-template-columns: repeat(2, minmax(0, 132px));
+        gap: 8px;
+      }
+
+      .custom-range.active {
+        display: grid;
+      }
+
+      .custom-range input {
+        height: 36px;
+        min-width: 0;
+        border: 1px solid #dbe3ef;
+        border-radius: 8px;
+        padding: 0 8px;
+        color: #111b31;
+        font-size: 12px;
+        font-weight: 700;
+        outline: none;
+      }
+
       .export-btn {
         color: var(--blue);
       }
@@ -884,6 +923,19 @@
           justify-content: center;
         }
 
+        .filter-stack {
+          width: 100%;
+          justify-items: stretch;
+        }
+
+        .range-select {
+          width: 100%;
+        }
+
+        .custom-range {
+          grid-template-columns: 1fr;
+        }
+
         .chart-wrap,
         .bar-wrap {
           height: 240px;
@@ -1085,10 +1137,14 @@
             </div>
 
             <div class="toolbar mt-4">
-              <label class="select-control" for="monthSelect">
+              <label class="select-control" for="parentRange">
                 <i class="fa-regular fa-calendar"></i>
-                <select id="monthSelect" class="bg-transparent font-bold outline-none"></select>
+                <select id="parentRange" class="bg-transparent font-bold outline-none"></select>
               </label>
+              <div id="parentCustomRange" class="custom-range">
+                <input id="parentStartDate" type="date" aria-label="Report start date" />
+                <input id="parentEndDate" type="date" aria-label="Report end date" />
+              </div>
               <button id="exportBtn" class="export-btn" type="button">
                 <i class="fa-solid fa-download text-lg"></i>
                 Export Report
@@ -1139,9 +1195,15 @@
           <article class="card panel">
             <div class="panel-header">
               <h2 class="text-[18px] font-extrabold">Income vs Expense Trend</h2>
-              <button class="select-control h-[38px] text-[13px]" type="button">
-                This Year <i class="fa-solid fa-chevron-down text-xs"></i>
-              </button>
+              <div class="filter-stack">
+                <label class="select-control h-[38px] text-[13px]" for="trendRange">
+                  <select id="trendRange" class="range-select" data-filter-key="trend"></select>
+                </label>
+                <div id="trendCustomRange" class="custom-range">
+                  <input id="trendStartDate" type="date" data-filter-key="trend" aria-label="Trend start date" />
+                  <input id="trendEndDate" type="date" data-filter-key="trend" aria-label="Trend end date" />
+                </div>
+              </div>
             </div>
             <div class="legend-inline">
               <span><span class="legend-dot bg-[var(--green)]"></span>Income</span>
@@ -1153,9 +1215,15 @@
           <article class="card panel">
             <div class="panel-header">
               <h2 class="text-[18px] font-extrabold">Expense by Category</h2>
-              <button class="select-control h-[38px] text-[13px]" type="button">
-                This Month <i class="fa-solid fa-chevron-down text-xs"></i>
-              </button>
+              <div class="filter-stack">
+                <label class="select-control h-[38px] text-[13px]" for="categoryRange">
+                  <select id="categoryRange" class="range-select" data-filter-key="category"></select>
+                </label>
+                <div id="categoryCustomRange" class="custom-range">
+                  <input id="categoryStartDate" type="date" data-filter-key="category" aria-label="Category start date" />
+                  <input id="categoryEndDate" type="date" data-filter-key="category" aria-label="Category end date" />
+                </div>
+              </div>
             </div>
             <div class="donut-area">
               <div>
@@ -1213,9 +1281,15 @@
           <article class="card panel">
             <div class="panel-header">
               <h2 class="text-[18px] font-extrabold">Top Spending Categories</h2>
-              <button class="select-control h-[38px] text-[13px]" type="button">
-                This Month <i class="fa-solid fa-chevron-down text-xs"></i>
-              </button>
+              <div class="filter-stack">
+                <label class="select-control h-[38px] text-[13px]" for="topRange">
+                  <select id="topRange" class="range-select" data-filter-key="top"></select>
+                </label>
+                <div id="topCustomRange" class="custom-range">
+                  <input id="topStartDate" type="date" data-filter-key="top" aria-label="Top categories start date" />
+                  <input id="topEndDate" type="date" data-filter-key="top" aria-label="Top categories end date" />
+                </div>
+              </div>
             </div>
             <div id="topCategories" class="top-categories"></div>
             <div class="mt-9 text-center">
@@ -1273,7 +1347,29 @@
 
       const categories = ["Food", "Transport", "Shopping", "Entertainment", "Bills", "Others"];
       const categoryColors = ["#16a34a", "#0b5cff", "#9b45f6", "#ff6b4a", "#ffb600", "#08adb5"];
-      let selectedMonth = "2026-08";
+      // Shared range labels used by the parent filter and the card-level overrides.
+      const dateRangeOptions = [
+        { value: "this-year", label: "This Year" },
+        { value: "last-year", label: "Last Year" },
+        { value: "last-6-months", label: "Last 6 Months" },
+        { value: "this-month", label: "This Month" },
+        { value: "last-month", label: "Last Month" },
+        { value: "this-week", label: "This Week" },
+        { value: "last-week", label: "Last Week" },
+        { value: "today", label: "Today" },
+        { value: "yesterday", label: "Yesterday" },
+        { value: "custom", label: "Custom Date Range" },
+      ];
+      const parentDateRangeOptions = dateRangeOptions.filter(
+        (option) => option.value !== "last-6-months",
+      );
+      // Parent filter drives the whole report until a card filter is changed manually.
+      const parentFilter = { range: "this-month", start: "", end: "" };
+      const cardFilters = {
+        trend: { range: "this-month", start: "", end: "", inherited: true },
+        category: { range: "this-month", start: "", end: "", inherited: true },
+        top: { range: "this-month", start: "", end: "", inherited: true },
+      };
       let trendChart = null;
       let doughnutChart = null;
       let stackedBarChart = null;
@@ -1292,6 +1388,7 @@
       };
 
       function buildSampleTransactions() {
+        // Demo data keeps the report useful when localStorage has no transactions yet.
         const out = [];
         Object.entries(demoMonthly).forEach(([month, data], monthIndex) => {
           out.push({
@@ -1327,6 +1424,7 @@
       }
 
       function normalizeTransactions(list) {
+        // Normalize data from localStorage before any chart or summary math runs.
         return list
           .filter((item) => item && item.date && item.type)
           .map((item) => ({
@@ -1375,6 +1473,181 @@
         );
       }
 
+      function parseDate(value) {
+        const [year, month, day] = String(value || "").split("-").map(Number);
+        return new Date(year, month - 1, day || 1);
+      }
+
+      function todayDate() {
+        const today = new Date();
+        return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      }
+
+      function formatDateInput(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      function startOfMonth(date) {
+        return new Date(date.getFullYear(), date.getMonth(), 1);
+      }
+
+      function endOfMonth(date) {
+        return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+      }
+
+      function addDays(date, days) {
+        const next = new Date(date);
+        next.setDate(next.getDate() + days);
+        return next;
+      }
+
+      function addMonths(date, months) {
+        return new Date(date.getFullYear(), date.getMonth() + months, 1);
+      }
+
+      function startOfWeek(date) {
+        const day = date.getDay() || 7;
+        return addDays(date, 1 - day);
+      }
+
+      function getAnchorDate(list = transactions) {
+        // Current ranges should follow the real calendar, not future/demo data.
+        return todayDate();
+      }
+
+      function getFilterState(filterKey) {
+        return filterKey === "parent" ? parentFilter : cardFilters[filterKey];
+      }
+
+      function normalizeCustomDateRange(filterKey) {
+        const filter = getFilterState(filterKey);
+        if (filter.range !== "custom") return;
+
+        const fallback = getDateRangeForPreset("this-month");
+        let start = filter.start ? parseDate(filter.start) : fallback.start;
+        let end = filter.end ? parseDate(filter.end) : fallback.end;
+
+        if (Number.isNaN(start.getTime())) start = fallback.start;
+        if (Number.isNaN(end.getTime())) end = fallback.end;
+        if (start > end) [start, end] = [end, start];
+
+        filter.start = formatDateInput(start);
+        filter.end = formatDateInput(end);
+
+        const startInput = document.getElementById(`${filterKey}StartDate`);
+        const endInput = document.getElementById(`${filterKey}EndDate`);
+        if (startInput) startInput.value = filter.start;
+        if (endInput) endInput.value = filter.end;
+      }
+
+      function getDateRangeForPreset(range) {
+        const anchor = getAnchorDate();
+        switch (range) {
+          case "last-6-months":
+            return { start: startOfMonth(addMonths(anchor, -5)), end: endOfMonth(anchor) };
+          case "this-month":
+            return { start: startOfMonth(anchor), end: endOfMonth(anchor) };
+          case "last-month": {
+            const previous = addMonths(anchor, -1);
+            return { start: startOfMonth(previous), end: endOfMonth(previous) };
+          }
+          case "this-week": {
+            const start = startOfWeek(anchor);
+            return { start, end: addDays(start, 6) };
+          }
+          case "last-week": {
+            const end = addDays(startOfWeek(anchor), -1);
+            return { start: addDays(end, -6), end };
+          }
+          case "today":
+            return { start: anchor, end: anchor };
+          case "yesterday": {
+            const yesterday = addDays(anchor, -1);
+            return { start: yesterday, end: yesterday };
+          }
+          case "last-year":
+            return {
+              start: new Date(anchor.getFullYear() - 1, 0, 1),
+              end: new Date(anchor.getFullYear() - 1, 11, 31),
+            };
+          case "this-year":
+          default:
+            return {
+              start: new Date(anchor.getFullYear(), 0, 1),
+              end: new Date(anchor.getFullYear(), 11, 31),
+            };
+        }
+      }
+
+      function getDateRange(filterKey) {
+        // All report filters resolve to an inclusive start/end date pair here.
+        const filter = getFilterState(filterKey);
+        if (filter.range !== "custom") return getDateRangeForPreset(filter.range);
+
+        const fallback = getDateRangeForPreset("this-month");
+        let start = filter.start ? parseDate(filter.start) : fallback.start;
+        let end = filter.end ? parseDate(filter.end) : fallback.end;
+        if (Number.isNaN(start.getTime())) start = fallback.start;
+        if (Number.isNaN(end.getTime())) end = fallback.end;
+        if (start > end) [start, end] = [end, start];
+        return { start, end };
+      }
+
+      function byDateRange(list, filterKey) {
+        const { start, end } = getDateRange(filterKey);
+        return list.filter((item) => {
+          const date = parseDate(item.date);
+          return date >= start && date <= end;
+        });
+      }
+
+      function filteredForCard(filterKey, query) {
+        // Card filters are independent after the user changes a card-specific dropdown.
+        return bySearch(byDateRange(transactions, filterKey), query);
+      }
+
+      function dayCountBetween(start, end) {
+        return Math.round((end - start) / 86400000) + 1;
+      }
+
+      function buildTimeBuckets(filterKey) {
+        const { start, end } = getDateRange(filterKey);
+        const groupByDay = dayCountBetween(start, end) <= 45;
+        const labels = [];
+        const keys = [];
+
+        if (groupByDay) {
+          for (let date = new Date(start); date <= end; date = addDays(date, 1)) {
+            keys.push(formatDateInput(date));
+            labels.push(
+              date.toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+              }),
+            );
+          }
+        } else {
+          for (
+            let date = startOfMonth(start);
+            date <= endOfMonth(end);
+            date = addMonths(date, 1)
+          ) {
+            keys.push(formatDateInput(date).slice(0, 7));
+            labels.push(
+              date.toLocaleDateString("en-IN", {
+                month: "short",
+                year: "2-digit",
+              }),
+            );
+          }
+        }
+
+        return { labels, keys, groupByDay };
+      }
+
       function totalsFor(list) {
         const income = sum(list.filter((item) => item.type === "income").map((item) => item.amount));
         const expense = sum(list.filter((item) => item.type === "expense").map((item) => item.amount));
@@ -1412,6 +1685,39 @@
         return { income, expense, categorySeries };
       }
 
+      function trendSeries(list, filterKey) {
+        const { labels, keys, groupByDay } = buildTimeBuckets(filterKey);
+
+        const income = keys.map(() => 0);
+        const expense = keys.map(() => 0);
+
+        list.forEach((item) => {
+          const key = groupByDay ? item.date : (item.date || "").slice(0, 7);
+          const index = keys.indexOf(key);
+          if (index < 0) return;
+          if (item.type === "income") income[index] += item.amount;
+          if (item.type === "expense") expense[index] += item.amount;
+        });
+
+        return { labels, income, expense };
+      }
+
+      function categorySeriesForRange(list, filterKey) {
+        const { labels, keys, groupByDay } = buildTimeBuckets(filterKey);
+        const categorySeries = Object.fromEntries(categories.map((category) => [category, keys.map(() => 0)]));
+
+        list.forEach((item) => {
+          if (item.type !== "expense") return;
+          const key = groupByDay ? item.date : (item.date || "").slice(0, 7);
+          const index = keys.indexOf(key);
+          if (index < 0) return;
+          const category = categories.includes(item.category) ? item.category : "Others";
+          categorySeries[category][index] += item.amount;
+        });
+
+        return { labels, categorySeries };
+      }
+
       function updateSummaryCards(totals) {
         document.getElementById("totalIncomeDisplay").textContent = formatCurrency(totals.income);
         document.getElementById("totalExpenseDisplay").textContent = formatCurrency(totals.expense);
@@ -1423,8 +1729,8 @@
         document.getElementById("summaryRate").textContent = `${totals.rate}%`;
       }
 
-      function renderTrendChart(list) {
-        const series = monthlySeries(list);
+      function renderTrendChart(list, filterKey = "trend") {
+        const series = trendSeries(list, filterKey);
         const ctx = document.getElementById("trendChart").getContext("2d");
         const greenFill = ctx.createLinearGradient(0, 0, 0, 250);
         greenFill.addColorStop(0, "rgba(22, 163, 74, 0.24)");
@@ -1436,7 +1742,7 @@
         trendChart = new Chart(ctx, {
           type: "line",
           data: {
-            labels: monthLabels(),
+            labels: series.labels,
             datasets: [
               {
                 label: "Income",
@@ -1500,16 +1806,16 @@
           .join("");
       }
 
-      function renderStackedBar(list) {
-        const series = monthlySeries(list).categorySeries;
+      function renderStackedBar(list, filterKey = "parent") {
+        const series = categorySeriesForRange(list, filterKey);
         if (stackedBarChart) stackedBarChart.destroy();
         stackedBarChart = new Chart(document.getElementById("stackedBarChart"), {
           type: "bar",
           data: {
-            labels: monthLabels(),
+            labels: series.labels,
             datasets: categories.map((category, index) => ({
               label: category,
-              data: series[category],
+              data: series.categorySeries[category],
               backgroundColor: categoryColors[index],
               borderRadius: 4,
               barPercentage: 0.6,
@@ -1570,7 +1876,7 @@
               ticks: {
                 color: "#34405c",
                 font: { weight: 600 },
-                callback: (value) => (value === 0 ? "₹0" : `₹${Math.round(value / 1000)}k`),
+                callback: (value) => (value === 0 ? `${currency()}0` : `${currency()}${Math.round(value / 1000)}k`),
               },
             },
           },
@@ -1578,28 +1884,54 @@
       }
 
       function renderAll() {
+        // Parent filter changes refresh every dependent section in one pass.
         transactions = normalizeTransactions(safeGetTransactions());
         const search = document.getElementById("searchInput").value.trim();
-        const visibleMonth = bySearch(byMonth(transactions, selectedMonth), search);
-        const visibleYear = bySearch(byYear(transactions, selectedMonth.slice(0, 4)), search);
-        const totals = totalsFor(visibleMonth);
+        const parentTransactions = bySearch(byDateRange(transactions, "parent"), search);
+        const trendTransactions = filteredForCard("trend", search);
+        const categoryTransactions = filteredForCard("category", search);
+        const topTransactions = filteredForCard("top", search);
+        const totals = totalsFor(parentTransactions);
         updateSummaryCards(totals);
-        renderTrendChart(visibleYear);
-        renderDoughnut(visibleMonth);
-        renderStackedBar(visibleYear);
-        renderTopCategories(visibleMonth);
+        renderTrendChart(trendTransactions, "trend");
+        renderDoughnut(categoryTransactions);
+        renderStackedBar(parentTransactions, "parent");
+        renderTopCategories(topTransactions);
+      }
+
+      function renderCard(filterKey) {
+        // Card-specific filter changes intentionally update only that card.
+        const search = document.getElementById("searchInput").value.trim();
+        const list = filteredForCard(filterKey, search);
+
+        if (filterKey === "trend") {
+          renderTrendChart(list, "trend");
+          return;
+        }
+
+        if (filterKey === "category") {
+          renderDoughnut(list);
+          return;
+        }
+
+        if (filterKey === "top") {
+          renderTopCategories(list);
+        }
       }
 
       function exportReport() {
         const search = document.getElementById("searchInput").value.trim();
-        const visible = bySearch(byMonth(transactions, selectedMonth), search);
+        const visible = bySearch(byDateRange(transactions, "parent"), search);
         const totals = totalsFor(visible);
+        const parentRange = getDateRange("parent");
         const blob = new Blob(
           [
             JSON.stringify(
               {
                 generatedAt: new Date().toISOString(),
-                month: selectedMonth,
+                range: parentFilter.range,
+                startDate: formatDateInput(parentRange.start),
+                endDate: formatDateInput(parentRange.end),
                 search,
                 totals,
                 transactions: visible,
@@ -1613,22 +1945,149 @@
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `finance-report-${selectedMonth}.json`;
+        link.download = `finance-report-${parentFilter.range}.json`;
         document.body.appendChild(link);
         link.click();
         link.remove();
         URL.revokeObjectURL(url);
       }
 
-      function populateMonthDropdown() {
-        const select = document.getElementById("monthSelect");
-        select.innerHTML = monthOptions
-          .map((item) => `<option value="${item.value}">${item.label}</option>`)
+      function updateCustomRangeVisibility(filterKey) {
+        const panel = document.getElementById(`${filterKey}CustomRange`);
+        if (!panel) return;
+        panel.classList.toggle("active", getFilterState(filterKey).range === "custom");
+      }
+
+      function setDefaultCustomDates(filterKey) {
+        const filter = getFilterState(filterKey);
+        const range = getDateRange(filterKey);
+        const startInput = document.getElementById(`${filterKey}StartDate`);
+        const endInput = document.getElementById(`${filterKey}EndDate`);
+        if (!filter.start) filter.start = formatDateInput(range.start);
+        if (!filter.end) filter.end = formatDateInput(range.end);
+        if (startInput) startInput.value = filter.start;
+        if (endInput) endInput.value = filter.end;
+      }
+
+      function syncCardSelect(filterKey) {
+        const select = document.getElementById(`${filterKey}Range`);
+        const startInput = document.getElementById(`${filterKey}StartDate`);
+        const endInput = document.getElementById(`${filterKey}EndDate`);
+        if (select) select.value = cardFilters[filterKey].range;
+        if (startInput) startInput.value = cardFilters[filterKey].start;
+        if (endInput) endInput.value = cardFilters[filterKey].end;
+        updateCustomRangeVisibility(filterKey);
+      }
+
+      function applyParentFilterToCards() {
+        // Parent changes reset card filters back into inherited mode.
+        Object.keys(cardFilters).forEach((filterKey) => {
+          cardFilters[filterKey] = {
+            range: parentFilter.range,
+            start: parentFilter.start,
+            end: parentFilter.end,
+            inherited: true,
+          };
+          setDefaultCustomDates(filterKey);
+          syncCardSelect(filterKey);
+        });
+      }
+
+      function populateParentDateRangeControl() {
+        // Header date range is the master report filter.
+        const select = document.getElementById("parentRange");
+        const startInput = document.getElementById("parentStartDate");
+        const endInput = document.getElementById("parentEndDate");
+        select.innerHTML = parentDateRangeOptions
+          .map((option) => `<option value="${option.value}">${option.label}</option>`)
           .join("");
-        select.value = selectedMonth;
+        select.value = parentFilter.range;
+        setDefaultCustomDates("parent");
+        updateCustomRangeVisibility("parent");
+
         select.addEventListener("change", (event) => {
-          selectedMonth = event.target.value;
+          parentFilter.range = event.target.value;
+          if (event.target.value === "custom") {
+            const range = getDateRange("parent");
+            parentFilter.start = formatDateInput(range.start);
+            parentFilter.end = formatDateInput(range.end);
+          } else {
+            parentFilter.start = "";
+            parentFilter.end = "";
+          }
+          normalizeCustomDateRange("parent");
+          setDefaultCustomDates("parent");
+          updateCustomRangeVisibility("parent");
+          applyParentFilterToCards();
           renderAll();
+        });
+
+        [startInput, endInput].forEach((input) => {
+          input.addEventListener("change", () => {
+            parentFilter.range = "custom";
+            parentFilter.start = startInput.value;
+            parentFilter.end = endInput.value;
+            normalizeCustomDateRange("parent");
+            select.value = "custom";
+            applyParentFilterToCards();
+            updateCustomRangeVisibility("parent");
+            renderAll();
+          });
+        });
+      }
+
+      function populateDateRangeControls() {
+        // Card controls start inherited, then become independent when edited.
+        Object.keys(cardFilters).forEach((filterKey) => {
+          const select = document.getElementById(`${filterKey}Range`);
+          const startInput = document.getElementById(`${filterKey}StartDate`);
+          const endInput = document.getElementById(`${filterKey}EndDate`);
+          if (!select) return;
+
+          select.innerHTML = dateRangeOptions
+            .map((option) => `<option value="${option.value}">${option.label}</option>`)
+            .join("");
+          select.value = cardFilters[filterKey].range;
+          setDefaultCustomDates(filterKey);
+          updateCustomRangeVisibility(filterKey);
+
+          select.addEventListener("change", (event) => {
+            const previousRange = cardFilters[filterKey].range;
+            const previousDates = getDateRange(filterKey);
+            cardFilters[filterKey].range = event.target.value;
+            cardFilters[filterKey].inherited = false;
+            if (event.target.value === "custom") {
+              cardFilters[filterKey].start =
+                previousRange === "custom"
+                  ? cardFilters[filterKey].start
+                  : formatDateInput(previousDates.start);
+              cardFilters[filterKey].end =
+                previousRange === "custom"
+                  ? cardFilters[filterKey].end
+                  : formatDateInput(previousDates.end);
+              normalizeCustomDateRange(filterKey);
+              setDefaultCustomDates(filterKey);
+            } else {
+              cardFilters[filterKey].start = "";
+              cardFilters[filterKey].end = "";
+            }
+            updateCustomRangeVisibility(filterKey);
+            renderCard(filterKey);
+          });
+
+          [startInput, endInput].forEach((input) => {
+            if (!input) return;
+            input.addEventListener("change", () => {
+              cardFilters[filterKey].range = "custom";
+              cardFilters[filterKey].inherited = false;
+              cardFilters[filterKey].start = startInput.value;
+              cardFilters[filterKey].end = endInput.value;
+              normalizeCustomDateRange(filterKey);
+              select.value = "custom";
+              updateCustomRangeVisibility(filterKey);
+              renderCard(filterKey);
+            });
+          });
         });
       }
 
@@ -1679,7 +2138,9 @@
       }
 
       document.addEventListener("DOMContentLoaded", () => {
-        populateMonthDropdown();
+        populateParentDateRangeControl();
+        applyParentFilterToCards();
+        populateDateRangeControls();
         wireUI();
         renderAll();
       });
