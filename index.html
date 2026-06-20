@@ -1,30 +1,96 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="">
 <head>
   <meta charset="UTF-8" />
-  <title>Finance Tracker — Transactions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finance Tracker — Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary:   { DEFAULT: '#2563EB', dark: '#1D4ED8', tint: '#EFF6FF' },
+            income:    { DEFAULT: '#16A34A', tint: '#DCFCE7' },
+            expense:   { DEFAULT: '#DC2626', tint: '#FEE2E2' },
+            warning:   '#D97706',
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-[#F8FAFC] dark:bg-[#0F172A] text-[#1A1A2E] dark:text-[#F1F5F9] min-h-screen">
 
-  <!-- NAVBAR -->
-  <nav class="bg-white shadow px-6 py-4 flex gap-6">
-    <a href="index.html">Dashboard</a>
-    <a href="transactions.html">Transactions</a>
-    <!-- ... -->
+  <!-- ───────────────────────── NAVBAR ───────────────────────── -->
+  <nav class="bg-white dark:bg-[#1E293B] border-b border-[#E5E7EB] dark:border-[#334155] px-6 py-4 flex items-center justify-between">
+    <h1 class="text-xl font-bold text-primary">💰 FinanceTracker</h1>
+    <div class="flex gap-6 text-sm font-medium">
+      <a href="index.html"        class="text-primary border-b-2 border-primary pb-1">Dashboard</a>
+      <a href="transactions.html" class="text-[#6B7280] dark:text-[#64748B] hover:text-primary">Transactions</a>
+      <a href="budget.html"       class="text-[#6B7280] dark:text-[#64748B] hover:text-primary">Budget</a>
+      <a href="reports.html"      class="text-[#6B7280] dark:text-[#64748B] hover:text-primary">Reports</a>
+      <a href="settings.html"     class="text-[#6B7280] dark:text-[#64748B] hover:text-primary">Settings</a>
+    </div>
   </nav>
 
-  <!-- MAIN -->
-  <main class="max-w-4xl mx-auto px-6 py-8">
+  <!-- ───────────────────────── MAIN ───────────────────────── -->
+  <main class="max-w-5xl mx-auto px-6 py-8">
 
-    <!-- TODO: Add dashboard content  -->
+    <!-- Welcome -->
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold" id="welcome-msg">Welcome back 👋</h2>
+      <p class="text-[#6B7280] dark:text-[#64748B] text-sm mt-1">Here's your financial overview</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+
+      <!-- Balance Card -->
+      <div class="bg-white dark:bg-[#1E293B] border border-[#E5E7EB] dark:border-[#334155] rounded-2xl p-5">
+        <p class="text-sm text-[#6B7280] dark:text-[#64748B]">Total Balance</p>
+        <p class="text-3xl font-bold mt-1 text-primary" id="total-balance">₹0</p>
+      </div>
+
+      <!-- Income Card -->
+      <div class="bg-income-tint dark:bg-[#14532D] border border-[#BBF7D0] dark:border-[#166534] rounded-2xl p-5">
+        <p class="text-sm text-income dark:text-[#86EFAC]">Total Income</p>
+        <p class="text-2xl font-bold mt-1 text-income dark:text-[#86EFAC]" id="total-income">₹0</p>
+      </div>
+
+      <!-- Expense Card -->
+      <div class="bg-expense-tint dark:bg-[#7F1D1D] border border-[#FECACA] dark:border-[#991B1B] rounded-2xl p-5">
+        <p class="text-sm text-expense dark:text-[#FCA5A5]">Total Expense</p>
+        <p class="text-2xl font-bold mt-1 text-expense dark:text-[#FCA5A5]" id="total-expense">₹0</p>
+      </div>
+
+    </div>
+
+    <!-- Quick Add Button -->
+    <div class="mb-6">
+      <a href="transactions.html"
+         class="inline-block bg-primary hover:bg-primary-dark text-white font-semibold px-5 py-2 rounded-xl transition">
+        + Add Transaction
+      </a>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="bg-white dark:bg-[#1E293B] border border-[#E5E7EB] dark:border-[#334155] rounded-2xl p-5">
+      <h3 class="text-lg font-semibold mb-4">Recent Transactions</h3>
+      <ul id="recent-list" class="divide-y divide-[#E5E7EB] dark:divide-[#334155]">
+        <li class="text-[#6B7280] dark:text-[#64748B] text-sm py-3">No transactions yet.</li>
+      </ul>
+      <a href="transactions.html" class="text-primary text-sm mt-4 inline-block hover:underline">
+        View all →
+      </a>
+    </div>
 
   </main>
 
+  <!-- ───────────────────────── SCRIPTS ───────────────────────── -->
   <script src="utils.js"></script>
-  <script>
-    // TODO: write your logic here
-  </script>
+  <script src="dashboard.js"></script>
 
 </body>
 </html>
