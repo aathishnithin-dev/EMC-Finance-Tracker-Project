@@ -1,32 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Finance Tracker — Transactions</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="./tailwindcli/src/output.css">
 </head>
+
 <body class="bg-gray-100 min-h-screen">
 
   <!-- NAVBAR -->
-  <nav class="bg-white shadow px-6 py-4 flex gap-6">
+  <nav class="bg-white shadow px-6 py-4 flex gap-6 sticky top-0">
     <a href="index.html">Dashboard</a>
     <a href="transactions.html">Transactions</a>
     <!-- ... -->
   </nav>
 
   <!-- MAIN -->
-  <main class="max-w-4xl mx-auto px-6 py-8">
+  <main class="max-w-6xl mx-auto px-6 py-8 h-[100vh]">
 
     <!-- TODO: Add transactions Form -->
 
+    <!-- new transaction box -->
+    <div class="w-full shadow-xl p-3 mb-4"> <!--main-div for add transaction -->
+      <div class="flex items-center gap-3 w-full mb-4"> <!---first -div  ----->
+        <i class="fa-solid fa-file-invoice" style="color: rgb(25, 85, 228);font-size: 30px;"></i>
+        <h2 class="font-bold text-2xl">Add new Transaction</h2>
+      </div>
+
+      <div class="grid md:grid-cols-6 grid-cols-1 gap-4">
+
+        <div>
+          <label class="font-bold mb-3 block">Name</label>
+          <input type="text" class="w-full border-2 border-gray-400 rounded px-3 py-1 placeholder:text-black"
+            placeholder="Name..." id="NtransName">
+        </div>
+        <div>
+          <label class="font-bold mb-3 block">Amount</label>
+          <input type="number"
+            class="w-full border-2 border-gray-400 rounded px-3 py-1 placeholder:text-black focus:border-0"
+            placeholder="Amount..." id="NtransAmount">
+        </div>
+
+        <div>
+          <label class="font-bold mb-3 block ">Category</label>
+          <select name="category" id="NtransCategory" class="border-2 rounded py-1 border-gray-400 w-full">
+            <option value="">Select Category</option>
+            <option value="Food">Food</option>
+            <option value="Transport">Transport</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Bills">Bills</option>
+            <option value="Health">Health</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="font-bold mb-3 block">Type</label>
+          <select name="category" id="NtransType" class="border-2 rounded py-1 px-3 border-gray-400 w-full">
+            <option value="">Select Type</option>
+            <option value="income" class="text-green-500">Income</option>
+            <option value="expense" class="text-red-500">Expense</option>
+
+          </select>
+        </div>
+        <div>
+          <label class="font-bold mb-3 bg-amber-50 block">Date</label>
+          <input type="date" class="w-full border-2 border-gray-400 rounded px-3 py-1" placeholder="Select Date" id="NtransDate">
+        </div>
+
+        <div class="flex flex-col justify-center">
+          <label class="font-bold mb-3 bg-amber-50" style="opacity: 0;">None</label>
+          <button class="bg-blue-500 p-2 md:p-1.5 rounded text-white font-semibold md:w-full w-[40%] mx-auto" id="addTransBtn">+Add
+            Transaction</button>
+        </div>
+
+      </div>
+    </div>
+
+
     <!-- TODO: transactions list -->
+
+    <div class="p-3"> <!---main transaction list box-->
+      <div class="flex flex-col md:flex-row gap-4 md:justify-between"> <!---search & filter box-->
+        <div class="flex gap-2 border-2 border-gray-200 rounded-xl items-center p-2"> <!---input Box-->
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Search transaction" class="focus:outline-none outline-none" id="searchName">
+        </div>
+        <!-- Search filter right side part -->
+        <div class="flex  flex-col md:flex-row  md:justify-between md:w-[60%]   gap-4 md:items-center text-sm">
+          <!---filter box-->
+          <div class="flex gap-2 flex-col md:flex-row"> <!---filter by Type-->
+            <p>Filter by Type</p>
+            <select name="type" id="FType" class="border border-gray-400 rounded px-4 py-1">
+              <option value="All">All</option>
+              <option value="income" class="text-green-500">Income</option>
+              <option value="expense" class="text-red-500">Expense</option>
+            </select>
+          </div>
+          <div class="flex gap-2 flex-col md:flex-row"> <!---filter by Category-->
+            <p>Filter by Category</p>
+            <select name="category" id="fCategory" class="border border-gray-400 rounded px-4 py-1">
+              <option value="All_categories">All Categories</option>
+              <option value="Food">Food</option>
+              <option value="Transport">Transport</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Bills">Bills</option>
+              <option value="Health">Health</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+
+          <!-- Reset button -->
+          <div>
+            <button class="bg-transparent border-gray-400 border px-3 rounded py-1" id="resetFilters">
+              <i class="fa-solid fa-arrow-rotate-left mr-2"></i>Reset Filters
+            </button>
+          </div>
+
+        </div> 
+
+      </div>
+
+      <!-- All Transaction List  -->
+       <div class="flex gap-2 items-center mt-4">
+          <i class="fa-solid fa-money-check text-2xl"></i>
+          <h2>All Transaction</h2>
+       </div>
+
+       <div class="overflow-x-auto rounded-2xl">
+          <table class="w-full min-w-[700px] border-separate border-spacing-y-5">
+            <thead class="bg-gray-200">
+              <tr>
+                <th class="px-4 py-3">Date</th>
+                <th class="px-4 py-3">Name</th>
+                <th class="px-4 py-3">Category</th>
+                <th class="px-4 py-3">Type</th>
+                <th class="px-4 py-3">Amount</th>
+                <th class="px-4 py-3"> Actions</th>
+              </tr>
+            </thead>
+            <tbody id="NtransData" class="mb-5">
+              <!-- <tr class="text-center">
+                <td> 07-05-2026 </td>
+                <td> Pizza </td>
+                <td> Food </td>
+                <td class="text-red-500"> Expense </td>
+                <td class="text-red-500">- 800 </td>
+                <td class="flex gap-2 justify-center">
+                  
+                  <button class="border border-gray-400 p-1 rounded" id="delBtn"><i class="fa-solid fa-trash"></i></button>
+                </td>
+              </tr>
+              <tr class="text-center">
+                <td> 07-05-2026 </td>
+                <td> Salary </td>
+                <td> Other </td>
+                <td class="text-green-500"> Income </td>
+                <td class="text-green-500">35000 </td>
+                <td class="flex gap-2 justify-center">
+                  
+                  <button class="border border-gray-400 p-1 rounded"><i class="fa-solid fa-trash"></i></button>
+                </td>
+              </tr> -->
+              
+            </tbody>
+          </table>
+       </div>
+    </div>
 
   </main>
 
   <script src="utils.js"></script>
-  <script>
-    // TODO: write your logic here
-  </script>
+  
+  <script src="transactions.js"></script>
 
 </body>
+
 </html>
