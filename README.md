@@ -47,7 +47,7 @@ This project was built collaboratively by a 5-member team, with each member owni
 |---|---|---|
 | Aathish Nithin (TL) | Dashboard | `index.html` |
 | Selva | Transactions | `transactions.html` |
-| Member 3 | Budget | `budget.html` |
+| Rishi | Budget | `budget.html` |
 | Saravana kumar | Reports | `reports.html` |
 | Shynthavi | Settings | `settings.html` |
 | Shared | Data layer | `utils.js` |
