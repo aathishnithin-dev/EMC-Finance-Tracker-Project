@@ -28,6 +28,65 @@ function saveBudgets(data) {
   localStorage.setItem("ft_budgets", JSON.stringify(data));
 }
 
+var budgets = [];
+
+function addBudget() {
+
+    var category = document.getElementById("category").value;
+    var amount = document.getElementById("amount").value;
+
+    if(category === "" || amount === "") {
+        alert("Please fill all fields");
+        return;
+    }
+
+    budgets.push({
+        category: category,
+        amount: Number(amount)
+    });
+
+    displayBudget();
+
+    document.getElementById("category").value = "";
+    document.getElementById("amount").value = "";
+}
+
+function displayBudget() {
+
+var table = document.getElementById("budgetTable");
+
+    table.innerHTML = "";
+
+    var total = 0;
+
+    budgets.forEach((item, index) => {
+
+        total += item.amount;
+
+        table.innerHTML += `
+        <tr>
+            <td>${item.category}</td>
+            <td>₹${item.amount}</td>
+            <td>
+                <button class="delete" onclick="deleteBudget(${index})">
+                    Delete
+                </button>
+            </td>
+        </tr>
+        `;
+    });
+
+    document.getElementById("totalBudget").innerHTML =
+        "Total Budget: ₹" + total;
+}
+
+function deleteBudget(index) {
+
+    budgets.splice(index, 1);
+
+    displayBudget();
+}
+
 // ── Settings Helpers ─────────────────────────────────────────
 function getSettings() {
   return (
